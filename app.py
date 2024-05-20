@@ -39,6 +39,38 @@ def compare_documents():
         else:
             st.info("No se encontraron diferencias entre los documentos.")
 
+def verify_file_compliance(tokens_referencia):
+    st.write("Verificando cumplimiento del archivo...")
+    # Lógica de verificación de cumplimiento aquí
+
+# Menú de opciones
+st.sidebar.header("Opciones")
+option = st.sidebar.selectbox("Selecciona una opción", ["Comparar Documentos", "Cargar y Vectorizar Manual", "Verificar Cumplimiento de Archivo"])
+
+if option == "Comparar Documentos":
+    compare_documents()
+elif option == "Cargar y Vectorizar Manual":
+    st.title("Cargar Manual de Referencia")
+    uploaded_reference_file = st.file_uploader("Subir archivo de referencia", type=["pdf", "txt", "docx"])
+    if uploaded_reference_file:
+        reference_file_type = uploaded_reference_file.name.split(".")[-1]
+        st.success(f"Archivo de referencia {uploaded_reference_file.name} cargado con éxito.")
+    
+    if uploaded_reference_file:
+        tokens_referencia = tokenizar_lineamientos([extraer_texto_pdf(uploaded_reference_file)])
+        load_manual(tokens_referencia)
+elif option == "Verificar Cumplimiento de Archivo":
+    st.title("Verificar Cumplimiento de Archivo")
+    uploaded_reference_file = st.file_uploader("Subir archivo de referencia", type=["pdf", "txt", "docx"])
+    if uploaded_reference_file:
+        reference_file_type = uploaded_reference_file.name.split(".")[-1]
+        st.success(f"Archivo de referencia {uploaded_reference_file.name} cargado con éxito.")
+    
+    if uploaded_reference_file:
+        tokens_referencia = tokenizar_lineamientos([extraer_texto_pdf(uploaded_reference_file)])
+        verify_file_compliance(tokens_referencia)
+
+
 
 # Configuración de la aplicación
 st.set_page_config(page_title="🤗💬 HugChat")
