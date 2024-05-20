@@ -33,7 +33,7 @@ def extraer_texto(file_type, file):
     return ""
 
 # Interfaz Streamlit
-st.title("Herramienta de Análisis de Documentos")
+st.title("Qualipharma - Analytics Town")
 
 # Cargar archivo de referencia
 st.header("Cargar Manual de Referencia")
