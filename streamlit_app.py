@@ -1,57 +1,51 @@
 import streamlit as st
+from langchain.chains import ConversationChain
 from hugchat import hugchat
 from hugchat.login import Login
-import os
 
-# App title
-st.set_page_config(page_title="🤗💬 HugChat")
+st.set_page_config(page_title="HugChat - An LLM-powered Streamlit app")
+st.title('🤗💬 HugChat App')
 
-# Sidebar
+# Hugging Face Credentials
 with st.sidebar:
-    st.title('🤗💬 HugChat')
+    st.header('Hugging Face Login')
+    hf_email = st.text_input('Enter E-mail:', type='password')
+    hf_pass = st.text_input('Enter password:', type='password')
 
-# Store LLM generated responses
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+# Store AI generated responses
+if "messages" not in st.session_state.keys():
+    st.session_state.messages = [{"role": "assistant", "content": "I'm HugChat, How may I help you?"}]
 
-# Display or clear chat messages
+# Display existing chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
 
-def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
-st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
-
 # Function for generating LLM response
-def generate_response(prompt_input, email, passwd):
+def generate_response(prompt, email, passwd):
     # Hugging Face Login
     sign = Login(email, passwd)
     cookies = sign.login()
+    sign.saveCookies()
     # Create ChatBot                        
     chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
+    chain = ConversationChain(llm=chatbot)
+    response = chain.run(input=prompt)
+    return response
 
-    for dict_message in st.session_state.messages:
-        string_dialogue = "You are a helpful assistant."
-        if dict_message["role"] == "user":
-            string_dialogue += "User: " + dict_message["content"] + "\n\n"
-        else:
-            string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
-
-    prompt = f"{string_dialogue} {prompt_input} Assistant: "
-    return chatbot.chat(prompt)
-
-# User-provided prompt
-if st.chat_input():
-    prompt = st.session_state.messages
+# Prompt for user input and save
+if prompt := st.chat_input():
     st.session_state.messages.append({"role": "user", "content": prompt})
-    st.write(prompt)
+    with st.chat_message("user"):
+        st.write(prompt)
 
-# Generate a new response if last message is not from assistant
+# If last message is not from assistant, we need to generate a new response
 if st.session_state.messages[-1]["role"] != "assistant":
+    # Call LLM
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            response = generate_response(prompt) 
-            st.write(response) 
+            response = generate_response(prompt, hf_email, hf_pass)
+            st.write(response)
+            
     message = {"role": "assistant", "content": response}
     st.session_state.messages.append(message)
