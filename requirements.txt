@@ -1,3 +1,11 @@
 streamlit
-hugchat==0.1.0
-langchain
+hugchat
+spacy
+pdfminer.six
+pandas
+scikit-learn
+nltk
+python-docx
+fuzzywuzzy
+openpyxl
+tabulate
