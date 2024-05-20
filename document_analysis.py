@@ -6,32 +6,21 @@ import json
 import csv
 import docx
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 from docx import Document
-from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-from fuzzywuzzy import fuzz
 from tabulate import tabulate
 from openpyxl import Workbook
 import logging
-from datetime import datetime
 
 import nltk
-import streamlit as st
-
 nltk.download('punkt')
-nltk.download('stopwords')
 nltk.download('wordnet')
 
-#nlp = spacy.load("en_core_web_sm")
-
-# Configuración del registro
 logging.basicConfig(filename='logs/document_analysis.log', level=logging.DEBUG)
 
 lemmatizer = WordNetLemmatizer()
 
-# Define las funciones aquí...
 def extraer_texto_docx(docx_file):
     texto = ""
     doc = Document(docx_file)
@@ -45,39 +34,16 @@ def extraer_texto_pdf(pdf_file):
 def leer_archivo_texto(txt_file):
     return txt_file.read().decode('utf-8')
 
-def procesar_texto(texto):
-    return nlp(texto)
-
 def tokenizar_lineamientos(lineamientos):
     tokens = []
     for lineamiento in lineamientos:
-        doc = nlp(lineamiento)
-        tokens.extend([token.text for token in doc])
+        tokens.extend(word_tokenize(lineamiento))
     return list(set(tokens))
 
 def vectorizar_texto(texto, tokens_referencia):
     vectorizer = TfidfVectorizer(vocabulary=tokens_referencia, lowercase=False)
     vector_tfidf = vectorizer.fit_transform([texto])
     return vector_tfidf.toarray()
-
-def guardar_diccionario_en_csv(diccionario, ruta_archivo_csv):
-    with open(ruta_archivo_csv, 'w', encoding='utf-8', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(["Regla", "Vector"])
-        for regla, vector in diccionario.items():
-            writer.writerow([regla, json.dumps(vector)])
-
-def cargar_diccionario_desde_csv(ruta_archivo):
-    diccionario = {}
-    with open(ruta_archivo, 'r', encoding='utf-8') as archivo_csv:
-        reader = csv.reader(archivo_csv)
-        next(reader)
-        for row in reader:
-            if len(row) >= 2:
-                key = row[0]
-                value = json.loads(row[1])
-                diccionario[key] = value
-    return diccionario
 
 def encontrar_diferencias(documento1, documento2):
     diferencias = []
@@ -130,7 +96,11 @@ def almacenar_reglas_vectorizadas(texto_manual, tokens_referencia):
             vector_tfidf = vectorizar_texto(regla, tokens_referencia)
             reglas_vectorizadas[regla] = vector_tfidf.tolist()[0]
     ruta_archivo_csv = "data/output/reglas_vectorizadas.csv"
-    guardar_diccionario_en_csv(reglas_vectorizadas, ruta_archivo_csv)
+    with open(ruta_archivo_csv, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["Regla", "Vector"])
+        for regla, vector in reglas_vectorizadas.items():
+            writer.writerow([regla, json.dumps(vector)])
     return reglas_vectorizadas
 
 def cargar_y_vectorizar_manual(file, file_type, tokens_referencia):
@@ -145,5 +115,9 @@ def cargar_y_vectorizar_manual(file, file_type, tokens_referencia):
 
     reglas_vectorizadas = almacenar_reglas_vectorizadas(texto_manual, tokens_referencia)
     ruta_archivo_csv = "data/output/manual_vectorizado.csv"
-    guardar_diccionario_en_csv(reglas_vectorizadas, ruta_archivo_csv)
+    with open(ruta_archivo_csv, 'w', encoding='utf-8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["Regla", "Vector"])
+        for regla, vector in reglas_vectorizadas.items():
+            writer.writerow([regla, json.dumps(vector)])
     return ruta_archivo_csv
