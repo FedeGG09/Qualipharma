@@ -1,11 +1,36 @@
 import streamlit as st
-from document_analysis import *
-from document_analysis import vectorizar_y_tokenizar_diferencias(
+from document_analysis import extraer_texto_pdf, extraer_texto_docx, leer_archivo_texto
+from document_analysis import encontrar_diferencias, vectorizar_y_tokenizar_diferencias, tokenizar_lineamientos, almacenar_reglas_vectorizadas, cargar_y_vectorizar_manual
 
-# Interfaz Streamlit
-st.title("Herramienta de Análisis de Documentos")
+# Función para procesar documentos
+def procesar_documentos(uploaded_reference_file, uploaded_compare_file, reference_file_type, compare_file_type):
+    texto_referencia = extraer_texto(reference_file_type, uploaded_reference_file)
+    texto_comparar = extraer_texto(compare_file_type, uploaded_compare_file)
+    
+    tokens_referencia = tokenizar_lineamientos([texto_referencia])
+    diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
+    
+    if diferencias:
+        diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
+        st.success("Las diferencias entre los documentos han sido encontradas y vectorizadas.")
+        
+        st.header("Diferencias Encontradas")
+        diferencias_tabla = []
+        for diferencia in diferencias:
+            diferencias_tabla.append([diferencia[0], diferencia[1], diferencia[2], diferencia[3]])
+        st.table(diferencias_tabla)
+    else:
+        st.info("No se encontraron diferencias entre los documentos.")
 
-
+# Función para extraer texto según el tipo de archivo
+def extraer_texto(file_type, file):
+    if file_type == "pdf":
+        return extraer_texto_pdf(file)
+    elif file_type == "docx":
+        return extraer_texto_docx(file)
+    elif file_type == "txt":
+        return leer_archivo_texto(file)
+    return ""
 
 # Interfaz Streamlit
 st.title("Herramienta de Análisis de Documentos")
@@ -24,96 +49,6 @@ if uploaded_compare_file:
     compare_file_type = uploaded_compare_file.name.split(".")[-1]
     st.success(f"Archivo a comparar {uploaded_compare_file.name} cargado con éxito.")
 
-# Cargar archivo de referencia
-st.header("Cargar Manual de Referencia")
-uploaded_reference_file = st.file_uploader("Subir archivo de referencia", type=["pdf", "txt", "docx"])
-if uploaded_reference_file:
-    reference_file_type = uploaded_reference_file.name.split(".")[-1]
-    st.success(f"Archivo de referencia {uploaded_reference_file.name} cargado con éxito.")
-
-# Botón para comparar documentos
-if st.button("Comparar Documentos"):
-    comparar_documentos()
-
 # Botón para procesar los documentos
-if st.button("Procesar Documentos"):
-    procesar_documentos()
-# Interfaz Streamlit
-st.title("Herramienta de Análisis de Documentos")
-
-
-
-# Funciones
-def compare_documents():
-    if uploaded_reference_file and uploaded_compare_file:
-        texto_comparar = extraer_texto_pdf(uploaded_compare_file) if compare_file_type == "pdf" else extraer_texto_docx(uploaded_compare_file) if compare_file_type == "docx" else leer_archivo_texto(uploaded_compare_file)
-        texto_referencia = extraer_texto_pdf(uploaded_reference_file) if reference_file_type == "pdf" else extraer_texto_docx(uploaded_reference_file) if reference_file_type == "docx" else leer_archivo_texto(uploaded_reference_file)
-        diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
-        
-        if diferencias:
-            diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
-            st.success("Las diferencias entre los documentos han sido encontradas y vectorizadas.")
-            
-            # Mostrar diferencias
-            st.header("Diferencias Encontradas")
-            diferencias_tabla = []
-            for diferencia in diferencias:
-                diferencias_tabla.append([diferencia[0], diferencia[1], diferencia[2], diferencia[3]])
-            st.table(diferencias_tabla)
-        else:
-            st.info("No se encontraron diferencias entre los documentos.")
-
-def verify_file_compliance(tokens_referencia):
-    st.write("Verificando cumplimiento del archivo...")
-    
-    # Lógica de verificación de cumplimiento aquí
-# Definir la función para vectorizar y tokenizar los documentos
-def procesar_documentos():
-    # Asegurarse de que los archivos estén cargados antes de continuar
-    if uploaded_reference_file and uploaded_compare_file:
-        # Obtener el texto de los archivos
-        texto_comparar = extraer_texto_pdf(uploaded_compare_file) if compare_file_type == "pdf" else extraer_texto_docx(uploaded_compare_file) if compare_file_type == "docx" else leer_archivo_texto(uploaded_compare_file)
-        texto_referencia = extraer_texto_pdf(uploaded_reference_file) if reference_file_type == "pdf" else extraer_texto_docx(uploaded_reference_file) if reference_file_type == "docx" else leer_archivo_texto(uploaded_reference_file)
-        
-        # Llamar a la función para vectorizar y tokenizar los documentos
-        vectorizar_y_tokenizar_diferencias((texto_comparar, texto_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
-        st.success("Documentos procesados con éxito.")
-
-from document_analysis import encontrar_diferencias
-
-# Definir la función para comparar documentos
-
-def comparar_documentos():
-    # Asegurarse de que los archivos estén cargados antes de continuar
-    if uploaded_reference_file and uploaded_compare_file:
-        # Obtener el texto de los archivos
-        texto_comparar = extraer_texto_pdf(uploaded_compare_file) if compare_file_type == "pdf" else extraer_texto_docx(uploaded_compare_file) if compare_file_type == "docx" else leer_archivo_texto(uploaded_compare_file)
-        texto_referencia = extraer_texto_pdf(uploaded_reference_file) if reference_file_type == "pdf" else extraer_texto_docx(uploaded_reference_file) if reference_file_type == "docx" else leer_archivo_texto(uploaded_reference_file)
-        
-        # Llamar a la función para comparar documentos
-        diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
-        
-        # Mostrar el resultado de la comparación
-        if diferencias:
-            st.success("Las diferencias entre los documentos han sido encontradas.")
-            # Mostrar las diferencias en una tabla
-            st.table(diferencias)
-        else:
-            st.info("No se encontraron diferencias entre los documentos.")
-# Menú de opciones
-st.sidebar.header("Opciones")
-option = st.sidebar.selectbox("Selecciona una opción", ["Comparar Documentos", "Cargar y Vectorizar Manual", "Verificar Cumplimiento de Archivo"])
-
-if option == "Comparar Documentos":
-    compare_documents()
-elif option == "Cargar y Vectorizar Manual":
-    if uploaded_reference_file:
-        tokens_referencia = tokenizar_lineamientos([extraer_texto_pdf(uploaded_reference_file) if reference_file_type == "pdf" else extraer_texto_docx(uploaded_reference_file) if reference_file_type == "docx" else leer_archivo_texto(uploaded_reference_file)])
-        load_manual(tokens_referencia)
-elif option == "Verificar Cumplimiento de Archivo":
-    if uploaded_reference_file:
-        tokens_referencia = tokenizar_lineamientos([extraer_texto_pdf(uploaded_reference_file) if reference_file_type == "pdf" else extraer_texto_docx(uploaded_reference_file) if reference_file_type == "docx" else leer_archivo_texto(uploaded_reference_file)])
-        verify_file_compliance(tokens_referencia)
-    else:
-        st.info("No se encontraron diferencias entre los documentos.")
-
+if st.button("Procesar Documentos") and uploaded_reference_file and uploaded_compare_file:
+    procesar_documentos(uploaded_reference_file, uploaded_compare_file, reference_file_type, compare_file_type)
