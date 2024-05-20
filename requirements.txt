@@ -8,3 +8,4 @@ fuzzywuzzy==0.18.0
 tabulate==0.8.9
 transformers==4.11.3
 openpyxl==3.0.9
+numpy
