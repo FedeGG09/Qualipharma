@@ -48,26 +48,34 @@ def encontrar_diferencias(documento1, documento2):
     try:
         lineas1 = documento1.split('\n')
         lineas2 = documento2.split('\n')
+
         for i, (linea1, linea2) in enumerate(zip(lineas1, lineas2), start=1):
             if linea1 != linea2:
-                diferencias.append((linea1, linea2, i, "Línea"))
+                diferencia = {
+                    "seccion": f"Línea {i}",
+                    "contenido_referencia": linea1,
+                    "contenido_documento": linea2,
+                    "tipo": "Línea",
+                    "recomendacion": f"Revisar la línea {i} en el documento y ajustarla según el manual."
+                }
+                diferencias.append(diferencia)
+
         return diferencias
     except Exception as e:
         logging.error(f"Error al encontrar diferencias: {e}")
-        return []
-
+        return None
 def vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, nombre_documento_comparar, nombre_documento_referencia):
     diferencias_vectorizadas = []
     for diferencia in diferencias:
-        texto_diferencia = diferencia[0] + " " + diferencia[1]
+        texto_diferencia = diferencia["contenido_referencia"] + " " + diferencia["contenido_documento"]
         tokens_diferencia = tokenizar_lineamientos([texto_diferencia])
         vector_tfidf_diferencia = vectorizar_texto(texto_diferencia, tokens_referencia)
-        diferencias_vectorizadas.append({
-            "Texto Diferencia": texto_diferencia,
-            "Vector": vector_tfidf_diferencia.tolist()[0]
-        })
+        diferencia["vector"] = vector_tfidf_diferencia.tolist()[0]
+        diferencias_vectorizadas.append(diferencia)
+
     if not diferencias_vectorizadas:
         return None
+
     df_diferencias = pd.DataFrame(diferencias_vectorizadas)
     ruta_directorio = "data/output/"
     os.makedirs(ruta_directorio, exist_ok=True)
