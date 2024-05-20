@@ -2,26 +2,6 @@ import streamlit as st
 from document_analysis import extraer_texto_pdf, extraer_texto_docx, leer_archivo_texto
 from document_analysis import encontrar_diferencias, vectorizar_y_tokenizar_diferencias, tokenizar_lineamientos, almacenar_reglas_vectorizadas, cargar_y_vectorizar_manual
 
-# Función para procesar documentos
-def procesar_documentos(uploaded_reference_file, uploaded_compare_file, reference_file_type, compare_file_type):
-    texto_referencia = extraer_texto(reference_file_type, uploaded_reference_file)
-    texto_comparar = extraer_texto(compare_file_type, uploaded_compare_file)
-    
-    tokens_referencia = tokenizar_lineamientos([texto_referencia])
-    diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
-    
-    if diferencias:
-        diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
-        st.success("Las diferencias entre los documentos han sido encontradas y vectorizadas.")
-        
-        st.header("Diferencias Encontradas")
-        diferencias_tabla = []
-        for diferencia in diferencias:
-            diferencias_tabla.append([diferencia[0], diferencia[1], diferencia[2], diferencia[3]])
-        st.table(diferencias_tabla)
-    else:
-        st.info("No se encontraron diferencias entre los documentos.")
-
 # Función para extraer texto según el tipo de archivo
 def extraer_texto(file_type, file):
     if file_type == "pdf":
@@ -31,6 +11,60 @@ def extraer_texto(file_type, file):
     elif file_type == "txt":
         return leer_archivo_texto(file)
     return ""
+
+# Función para procesar documentos y mostrar diferencias detalladas
+def procesar_documentos(uploaded_reference_file, uploaded_compare_file, reference_file_type, compare_file_type):
+    texto_referencia = extraer_texto(reference_file_type, uploaded_reference_file)
+    texto_comparar = extraer_texto(compare_file_type, uploaded_compare_file)
+
+    tokens_referencia = tokenizar_lineamientos([texto_referencia])
+    diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
+
+    if diferencias:
+        diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
+        st.success("Las diferencias entre los documentos han sido encontradas y vectorizadas.")
+
+        st.header("Diferencias Encontradas")
+        for diferencia in diferencias_vectorizadas:
+            st.subheader(diferencia["seccion"])
+            st.write(f"**Contenido en el Manual:** {diferencia['contenido_referencia']}")
+            st.write(f"**Contenido en el Documento:** {diferencia['contenido_documento']}")
+            st.write(f"**Tipo de Diferencia:** {diferencia['tipo']}")
+            st.write(f"**Recomendación:** {diferencia['recomendacion']}")
+    else:
+        st.info("No se encontraron diferencias entre los documentos.")
+
+# Función para comparar documentos
+def compare_documents():
+    if uploaded_reference_file and uploaded_compare_file:
+        texto_comparar = extraer_texto(compare_file_type, uploaded_compare_file)
+        texto_referencia = extraer_texto(reference_file_type, uploaded_reference_file)
+        diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
+
+        if diferencias:
+            diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
+            st.success("Las diferencias entre los documentos han sido encontradas y vectorizadas.")
+
+            st.header("Diferencias Encontradas")
+            for diferencia in diferencias_vectorizadas:
+                st.subheader(diferencia["seccion"])
+                st.write(f"**Contenido en el Manual:** {diferencia['contenido_referencia']}")
+                st.write(f"**Contenido en el Documento:** {diferencia['contenido_documento']}")
+                st.write(f"**Tipo de Diferencia:** {diferencia['tipo']}")
+                st.write(f"**Recomendación:** {diferencia['recomendacion']}")
+        else:
+            st.info("No se encontraron diferencias entre los documentos.")
+
+# Función para cargar y vectorizar el manual
+def load_manual(tokens_referencia):
+    almacenar_reglas_vectorizadas(tokens_referencia)
+    st.success("Manual cargado y vectorizado con éxito.")
+
+# Función para verificar cumplimiento de archivo
+def verify_file_compliance(tokens_referencia):
+    # Aquí puedes implementar la lógica para verificar el cumplimiento del archivo
+    # basado en los tokens de referencia vectorizados.
+    st.info("Verificación de cumplimiento no implementada.")
 
 # Interfaz Streamlit
 st.title("Qualipharma - Analytics Town")
@@ -49,6 +83,19 @@ if uploaded_compare_file:
     compare_file_type = uploaded_compare_file.name.split(".")[-1]
     st.success(f"Archivo a comparar {uploaded_compare_file.name} cargado con éxito.")
 
-# Botón para procesar los documentos
-if st.button("Procesar Documentos") and uploaded_reference_file and uploaded_compare_file:
-    procesar_documentos(uploaded_reference_file, uploaded_compare_file, reference_file_type, compare_file_type)
+# Actualizar la interfaz de usuario para el análisis detallado
+st.sidebar.header("Opciones")
+option = st.sidebar.selectbox("Selecciona una opción", ["Comparar Documentos", "Cargar y Vectorizar Manual", "Verificar Cumplimiento de Archivo"])
+
+if option == "Comparar Documentos":
+    compare_documents()
+elif option == "Cargar y Vectorizar Manual":
+    if uploaded_reference_file:
+        tokens_referencia = tokenizar_lineamientos([extraer_texto(reference_file_type, uploaded_reference_file)])
+        load_manual(tokens_referencia)
+elif option == "Verificar Cumplimiento de Archivo":
+    if uploaded_reference_file:
+        tokens_referencia = tokenizar_lineamientos([extraer_texto(reference_file_type, uploaded_reference_file)])
+        verify_file_compliance(tokens_referencia)
+    else:
+        st.info("No se encontró archivo de referencia para verificar.")
