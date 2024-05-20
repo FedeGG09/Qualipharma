@@ -1,11 +1,10 @@
-streamlit
-hugchat
-spacy
-pdfminer.six
 pandas
+pdfminer.six
+spacy
 scikit-learn
-nltk
 python-docx
+nltk
 fuzzywuzzy
-openpyxl
 tabulate
+openpyxl
+streamlit
