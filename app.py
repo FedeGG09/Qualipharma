@@ -1,7 +1,6 @@
 import streamlit as st
 from document_analysis import *
-from document_analysis import vectorizar_y_tokenizar_diferencias
-
+from document_analysis import vectorizar_y_tokenizar_diferencias(
 
 # Interfaz Streamlit
 st.title("Herramienta de Análisis de Documentos")
@@ -15,7 +14,7 @@ def procesar_documentos():
         texto_referencia = extraer_texto_pdf(uploaded_reference_file) if reference_file_type == "pdf" else extraer_texto_docx(uploaded_reference_file) if reference_file_type == "docx" else leer_archivo_texto(uploaded_reference_file)
         
         # Llamar a la función para vectorizar y tokenizar los documentos
-        vectorizar_y_tokenizar_diferencias(texto_comparar, texto_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
+        vectorizar_y_tokenizar_diferencias((texto_comparar, texto_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
         st.success("Documentos procesados con éxito.")
 
 
