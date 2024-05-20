@@ -1,11 +1,8 @@
-pandas
+streamlit
 pdfminer.six
 spacy
+pandas
 scikit-learn
-python-docx
 nltk
-fuzzywuzzy
-tabulate
+python-docx
 openpyxl
-streamlit
-hugchat
