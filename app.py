@@ -42,19 +42,6 @@ def generate_response(prompt_input, email, passwd):
     prompt = f"{string_dialogue} {prompt_input} Assistant: "
     return chatbot.chat(prompt)
 
-# Entrada de prompt proporcionado por el usuario
-if st.chat_input():
-    prompt = st.chat_input()  # Obtén el prompt del input del usuario
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            email = st.secrets["email"]  # Asegúrate de agregar tus credenciales en streamlit secrets
-            passwd = st.secrets["passwd"] 
-            response = generate_response(prompt, email, passwd)
-            st.write(response)
-            st.session_state.messages.append({"role": "assistant", "content": response})
-
 # Funcionalidades adicionales para la carga y análisis de documentos
 def load_manual(tokens_referencia):
     st.write("Cargando y vectorizando manual...")
@@ -97,7 +84,7 @@ elif option == "Verificar Cumplimiento de Archivo":
     tokens_referencia = tokenizar_lineamientos([extraer_texto_pdf(uploaded_reference_file)])
     verify_file_compliance(tokens_referencia)
 
-# Interfaz Streamlit
+# Interfaz Streamlit (continuación)
 st.title("Herramienta de Análisis de Documentos")
 
 # Cargar archivo de referencia
@@ -137,3 +124,4 @@ if uploaded_reference_file and uploaded_compare_file:
         st.table(diferencias_tabla)
     else:
         st.info("No se encontraron diferencias entre los documentos.")
+
