@@ -24,7 +24,7 @@ nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-nlp = spacy.load("en_core_web_sm")
+#nlp = spacy.load("en_core_web_sm")
 
 # Configuración del registro
 logging.basicConfig(filename='logs/document_analysis.log', level=logging.DEBUG)
