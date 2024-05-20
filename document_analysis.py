@@ -9,8 +9,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from docx import Document
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-from tabulate import tabulate
-from openpyxl import Workbook
 import logging
 
 import nltk
@@ -48,24 +46,15 @@ def vectorizar_texto(texto, tokens_referencia):
 def encontrar_diferencias(documento1, documento2):
     diferencias = []
     try:
-        if isinstance(documento1, str) and isinstance(documento2, str):
-            lineas1 = documento1.split('\n')
-            lineas2 = documento2.split('\n')
-            for i, (linea1, linea2) in enumerate(zip(lineas1, lineas2), start=1):
-                if linea1 != linea2:
-                    diferencias.append((linea1, linea2, i, "Línea"))
-        else:
-            for i, parrafo1 in enumerate(documento1.paragraphs, start=1):
-                if i <= len(documento2.paragraphs):
-                    parrafo2 = documento2.paragraphs[i-1]
-                    if parrafo1.text != parrafo2.text:
-                        diferencias.append((parrafo1.text, parrafo2.text, i, "Párrafo"))
-                else:
-                    diferencias.append((parrafo1.text, "", i, "Párrafo"))
-
+        lineas1 = documento1.split('\n')
+        lineas2 = documento2.split('\n')
+        for i, (linea1, linea2) in enumerate(zip(lineas1, lineas2), start=1):
+            if linea1 != linea2:
+                diferencias.append((linea1, linea2, i, "Línea"))
         return diferencias
     except Exception as e:
         logging.error(f"Error al encontrar diferencias: {e}")
+        return []
 
 def vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, nombre_documento_comparar, nombre_documento_referencia):
     diferencias_vectorizadas = []
