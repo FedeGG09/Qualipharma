@@ -8,3 +8,4 @@ fuzzywuzzy
 tabulate
 openpyxl
 streamlit
+hugchat
