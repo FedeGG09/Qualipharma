@@ -1,7 +1,7 @@
 import streamlit as st
 from hugchat import hugchat
 from hugchat.login import Login
-import langchain_app.py
+from langchain_app import *  # Importar todo el contenido de langchain_app.py
 import os
 
 # App title
