@@ -17,7 +17,47 @@ def procesar_documentos():
         vectorizar_y_tokenizar_diferencias((texto_comparar, texto_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
         st.success("Documentos procesados con éxito.")
 
+from document_analysis import encontrar_diferencias
 
+# Definir la función para comparar documentos
+def comparar_documentos():
+    # Asegurarse de que los archivos estén cargados antes de continuar
+    if uploaded_reference_file and uploaded_compare_file:
+        # Obtener el texto de los archivos
+        texto_comparar = extraer_texto_pdf(uploaded_compare_file) if compare_file_type == "pdf" else extraer_texto_docx(uploaded_compare_file) if compare_file_type == "docx" else leer_archivo_texto(uploaded_compare_file)
+        texto_referencia = extraer_texto_pdf(uploaded_reference_file) if reference_file_type == "pdf" else extraer_texto_docx(uploaded_reference_file) if reference_file_type == "docx" else leer_archivo_texto(uploaded_reference_file)
+        
+        # Llamar a la función para comparar documentos
+        diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
+        
+        # Mostrar el resultado de la comparación
+        if diferencias:
+            st.success("Las diferencias entre los documentos han sido encontradas.")
+            # Mostrar las diferencias en una tabla
+            st.table(diferencias)
+        else:
+            st.info("No se encontraron diferencias entre los documentos.")
+
+# Interfaz Streamlit
+st.title("Herramienta de Análisis de Documentos")
+
+# Cargar archivo de referencia
+st.header("Cargar Manual de Referencia")
+uploaded_reference_file = st.file_uploader("Subir archivo de referencia", type=["pdf", "txt", "docx"])
+if uploaded_reference_file:
+    reference_file_type = uploaded_reference_file.name.split(".")[-1]
+    st.success(f"Archivo de referencia {uploaded_reference_file.name} cargado con éxito.")
+
+# Cargar archivo a comparar
+st.header("Cargar Documento a Comparar")
+uploaded_compare_file = st.file_uploader("Subir archivo a comparar", type=["pdf", "txt", "docx"])
+if uploaded_compare_file:
+    compare_file_type = uploaded_compare_file.name.split(".")[-1]
+    st.success(f"Archivo a comparar {uploaded_compare_file.name} cargado con éxito.")
+
+# Botón para comparar documentos
+if st.button("Comparar Documentos"):
+    comparar_documentos()
 
 # Cargar archivo de referencia
 st.header("Cargar Manual de Referencia")
