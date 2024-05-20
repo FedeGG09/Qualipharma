@@ -71,14 +71,6 @@ elif option == "Verificar Cumplimiento de Archivo":
         verify_file_compliance(tokens_referencia)
 
 
-
-# Configuración de la aplicación
-st.set_page_config(page_title="🤗💬 HugChat")
-
-# Barra lateral
-with st.sidebar:
-    st.title('🤗💬 HugChat')
-
 # Almacenamiento de respuestas generadas por el LLM
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
