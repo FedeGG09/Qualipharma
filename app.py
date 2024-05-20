@@ -2,7 +2,43 @@ import streamlit as st
 from hugchat import hugchat
 from hugchat.login import Login
 import os
-from document_analysis import *  # Importa todas las funciones del análisis de documentos
+
+from document_analysis import *
+
+# Interfaz Streamlit
+st.title("Herramienta de Análisis de Documentos")
+
+# Cargar archivo de referencia
+st.header("Cargar Manual de Referencia")
+uploaded_reference_file = st.file_uploader("Subir archivo de referencia", type=["pdf", "txt", "docx"])
+if uploaded_reference_file:
+    reference_file_type = uploaded_reference_file.name.split(".")[-1]
+    st.success(f"Archivo de referencia {uploaded_reference_file.name} cargado con éxito.")
+
+# Cargar archivo a comparar
+st.header("Cargar Documento a Comparar")
+uploaded_compare_file = st.file_uploader("Subir archivo a comparar", type=["pdf", "txt", "docx"])
+if uploaded_compare_file:
+    compare_file_type = uploaded_compare_file.name.split(".")[-1]
+    st.success(f"Archivo a comparar {uploaded_compare_file.name} cargado con éxito.")
+
+# Ahora puedes definir las funciones que utilizan estas variables
+def compare_documents():
+    # Asegúrate de que los archivos estén cargados antes de continuar
+    if uploaded_reference_file and uploaded_compare_file:
+        # Obtén el texto de los archivos
+        texto_comparar = extraer_texto_pdf(uploaded_compare_file)
+        texto_referencia = extraer_texto_pdf(uploaded_reference_file)
+        
+        # Realiza la comparación de documentos
+        diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
+        if diferencias:
+            # Si hay diferencias, muestra la tabla
+            st.success("Las diferencias entre los documentos han sido encontradas.")
+            st.table(diferencias)
+        else:
+            st.info("No se encontraron diferencias entre los documentos.")
+
 
 # Configuración de la aplicación
 st.set_page_config(page_title="🤗💬 HugChat")
