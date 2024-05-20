@@ -1,11 +1,2 @@
 streamlit
-hugchat==0.0.8
-pandas==1.3.3
-pdfminer.six==20201018
-spacy==3.1.3
-nltk==3.6.5
-fuzzywuzzy==0.18.0
-tabulate==0.8.9
-transformers==4.11.3
-openpyxl==3.0.9
-numpy
+hugchat==0.1.0
