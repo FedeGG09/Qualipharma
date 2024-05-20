@@ -1,6 +1,7 @@
 import streamlit as st
 from hugchat import hugchat
 from hugchat.login import Login
+import os
 
 # App title
 st.set_page_config(page_title="🤗💬 HugChat")
@@ -20,15 +21,19 @@ with st.sidebar:
         else:
             st.success('Proceed to entering your prompt message!', icon='👉')
     st.markdown('📖 Learn how to build this app in this [blog](https://blog.streamlit.io/how-to-build-an-llm-powered-chatbot-with-streamlit/)!')
-    
-# Store LLM generated responses
-if "messages" not in st.session_state.keys():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I help you?"}]
 
-# Display chat messages
+# Store LLM generated responses
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+
+# Display or clear chat messages
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.write(message["content"])
+
+def clear_chat_history():
+    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
+st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
 # Function for generating LLM response
 def generate_response(prompt_input, email, passwd):
@@ -37,7 +42,16 @@ def generate_response(prompt_input, email, passwd):
     cookies = sign.login()
     # Create ChatBot                        
     chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
-    return chatbot.chat(prompt_input)
+
+    for dict_message in st.session_state.messages:
+        string_dialogue = "You are a helpful assistant."
+        if dict_message["role"] == "user":
+            string_dialogue += "User: " + dict_message["content"] + "\n\n"
+        else:
+            string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
+
+    prompt = f"{string_dialogue} {prompt_input} Assistant: "
+    return chatbot.chat(prompt)
 
 # User-provided prompt
 if prompt := st.chat_input(disabled=not (hf_email and hf_pass)):
