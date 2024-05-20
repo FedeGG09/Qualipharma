@@ -1,6 +1,34 @@
 import streamlit as st
-from document_analysis import extraer_texto_pdf, extraer_texto_docx, leer_archivo_texto
-from document_analysis import encontrar_diferencias, vectorizar_y_tokenizar_diferencias, tokenizar_lineamientos, almacenar_reglas_vectorizadas
+from document_analysis import (
+    extraer_texto_pdf, 
+    extraer_texto_docx, 
+    leer_archivo_texto, 
+    encontrar_diferencias, 
+    vectorizar_y_tokenizar_diferencias, 
+    tokenizar_lineamientos, 
+    almacenar_reglas_vectorizadas, 
+    cargar_y_vectorizar_manual
+)
+
+# Función para procesar documentos
+def procesar_documentos(uploaded_reference_file, uploaded_compare_file, reference_file_type, compare_file_type):
+    texto_referencia = extraer_texto(reference_file_type, uploaded_reference_file)
+    texto_comparar = extraer_texto(compare_file_type, uploaded_compare_file)
+    
+    tokens_referencia = tokenizar_lineamientos([texto_referencia])
+    diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
+    
+    if diferencias:
+        diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
+        st.success("Las diferencias entre los documentos han sido encontradas y vectorizadas.")
+        
+        st.header("Diferencias Encontradas")
+        diferencias_tabla = []
+        for diferencia in diferencias:
+            diferencias_tabla.append([diferencia[0], diferencia[1], diferencia[2], diferencia[3]])
+        st.table(diferencias_tabla)
+    else:
+        st.info("No se encontraron diferencias entre los documentos.")
 
 # Función para extraer texto según el tipo de archivo
 def extraer_texto(file_type, file):
@@ -12,28 +40,6 @@ def extraer_texto(file_type, file):
         return leer_archivo_texto(file)
     return ""
 
-# Función para procesar documentos y mostrar diferencias detalladas
-def procesar_documentos(uploaded_reference_file, uploaded_compare_file, reference_file_type, compare_file_type):
-    texto_referencia = extraer_texto(reference_file_type, uploaded_reference_file)
-    texto_comparar = extraer_texto(compare_file_type, uploaded_compare_file)
-
-    tokens_referencia = tokenizar_lineamientos([texto_referencia])
-    diferencias = encontrar_diferencias(texto_comparar, texto_referencia)
-
-    if diferencias:
-        diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, uploaded_reference_file.name)
-        st.success("Las diferencias entre los documentos han sido encontradas y vectorizadas.")
-
-        st.header("Diferencias Encontradas")
-        for diferencia in diferencias_vectorizadas:
-            st.subheader(diferencia["seccion"])
-            st.write(f"**Contenido en el Manual:** {diferencia['contenido_referencia']}")
-            st.write(f"**Contenido en el Documento:** {diferencia['contenido_documento']}")
-            st.write(f"**Tipo de Diferencia:** {diferencia['tipo']}")
-            st.write(f"**Recomendación:** {diferencia['recomendacion']}")
-    else:
-        st.info("No se encontraron diferencias entre los documentos.")
-
 # Función para cargar y vectorizar el manual
 def load_manual(tokens_referencia):
     almacenar_reglas_vectorizadas(tokens_referencia)
@@ -41,21 +47,18 @@ def load_manual(tokens_referencia):
 
 # Función para verificar cumplimiento de archivo
 def verify_file_compliance(tokens_referencia, uploaded_compare_file, compare_file_type):
-    # Extraer y tokenizar el texto del documento a comparar
     texto_comparar = extraer_texto(compare_file_type, uploaded_compare_file)
     tokens_comparar = tokenizar_lineamientos([texto_comparar])
     
-    # Encontrar diferencias entre el documento a comparar y los tokens de referencia
     diferencias = encontrar_diferencias(texto_comparar, " ".join(tokens_referencia))
     
-    # Verificar cumplimiento basándose en las diferencias encontradas
     if diferencias:
         diferencias_vectorizadas = vectorizar_y_tokenizar_diferencias(diferencias, tokens_referencia, uploaded_compare_file.name, "Manual de Referencia")
         
         st.success("El documento ha sido analizado para verificar el cumplimiento.")
         
         st.header("Resultados de Verificación de Cumplimiento")
-        cumple = True  # Inicialmente asumimos que cumple
+        cumple = True
         for diferencia in diferencias_vectorizadas:
             st.subheader(diferencia["seccion"])
             st.write(f"**Contenido en el Manual:** {diferencia['contenido_referencia']}")
