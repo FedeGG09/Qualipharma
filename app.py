@@ -75,33 +75,6 @@ elif option == "Verificar Cumplimiento de Archivo":
 if "messages" not in st.session_state:
     st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
 
-# Mostrar o limpiar mensajes del chat
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
-
-def clear_chat_history():
-    st.session_state.messages = [{"role": "assistant", "content": "How may I assist you today?"}]
-st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
-
-# Función para generar respuestas del LLM
-def generate_response(prompt_input, email, passwd):
-    # Login en Hugging Face
-    sign = Login(email, passwd)
-    cookies = sign.login()
-    # Crear ChatBot                        
-    chatbot = hugchat.ChatBot(cookies=cookies.get_dict())
-
-    for dict_message in st.session_state.messages:
-        string_dialogue = "You are a helpful assistant."
-        if dict_message["role"] == "user":
-            string_dialogue += "User: " + dict_message["content"] + "\n\n"
-        else:
-            string_dialogue += "Assistant: " + dict_message["content"] + "\n\n"
-
-    prompt = f"{string_dialogue} {prompt_input} Assistant: "
-    return chatbot.chat(prompt)
-
 # Funcionalidades adicionales para la carga y análisis de documentos
 def load_manual(tokens_referencia):
     st.write("Cargando y vectorizando manual...")
