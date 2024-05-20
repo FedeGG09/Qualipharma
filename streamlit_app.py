@@ -1,6 +1,7 @@
 import streamlit as st
 from hugchat import hugchat
 from hugchat.login import Login
+import langchain_app.py
 import os
 
 # App title
@@ -42,8 +43,7 @@ def generate_response(prompt_input, email, passwd):
     return chatbot.chat(prompt)
 
 # User-provided prompt
-if st.chat_input():
-    prompt = st.session_state.messages
+if prompt := st.chat_input(disabled=not):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.write(prompt)
 
